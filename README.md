@@ -14,6 +14,7 @@
 | Substream      | Status | Description |
 |----------------|:------:|-------------|
 | [`chainlink-prices`](chainlink-prices/)                 | 🔨 | Chainlink prices events
+| [`erc1155`](erc1155/)                 | 🔨 | Track a single ERC1155 contract
 
 
 ### Further resources
