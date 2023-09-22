@@ -1,0 +1,38 @@
+type Collection @entity {
+  id: ID! #address of the contract
+  tokens: [Token!]! @derivedFrom(field: "collection") #tokens that belong to the contractA
+}
+
+enum TransferType {
+  SINGLE,
+  BATCH
+}
+
+type Transfer @entity {
+  id: ID! # {tx-hash}-{log-index}
+  from: Account! #account that sent the transfer
+  to: Account! #account that received the transfer
+  operator: Account! #account that sent the transfer (msg.sender)
+  tokenIds: [Token!]! #token ids that were transferred
+  transferType: TransferType! #single or batch transfer
+}
+
+type ApprovalForAll @entity {
+  id: ID! #tx hash of the approval
+  owner: Account!
+  operator: Account!
+  approved: Boolean!
+}
+
+type Token @entity {
+  id: ID! #token id
+  collection: Collection! #contract that the token belongs to
+  owner: Account! #account that owns the token
+  transfers: [Transfer!]! @derivedFrom(field: "tokenIds") #transfers that the token has been involved in
+  uri: String #uri of the token
+}
+
+type Account @entity {
+  id: ID! #Address of the account
+  tokens: [Token!]! @derivedFrom(field: "owner") #tokens that the account owns
+}
