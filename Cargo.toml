@@ -1,5 +1,5 @@
 [workspace]
-members = []
+members = ["chainlink-prices"]
 
 [workspace.dependencies]
 prost = "0.11"
