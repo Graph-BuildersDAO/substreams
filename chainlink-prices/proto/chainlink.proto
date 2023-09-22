@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package chainlink.v1;
+
+message AssetPair {
+  string description = 1;
+  string aggregator_address = 2;
+  string oracle_address = 3;
+  ERC20Token base_token = 4;
+  ERC20Token quote_token = 5;
+}
+
+message Price {
+    AssetPair asset_pair = 1;
+    string price = 2;
+    string raw_price = 3;
+    int64 timestamp = 4;
+    string transmitter = 5;
+  }
+  
+message AssetPairs {
+  repeated AssetPair items = 1;
+}
+
+message Prices {
+  repeated Price items = 1;
+}
+
+message ERC20Token {
+  string address = 1;
+  string name = 2;
+  string symbol = 3;
+  uint64 decimals = 4;
+}
+
+message Aggregator {
+  ERC20Token base_asset = 1;
+  ERC20Token quote_asset = 2;
+}
+  
+message Aggregators {
+  repeated Aggregator items = 1;
+}

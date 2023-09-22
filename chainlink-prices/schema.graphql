@@ -1,0 +1,31 @@
+type Asset @entity {
+  id: ID!
+  symbol: String
+  name: String
+  decimals: BigInt
+}
+
+type AssetPair @entity {
+  id: ID!
+  asset: Asset
+  comparedAsset: Asset
+  currentPrice: BigDecimal!
+  currentRawPrice: BigInt!
+  aggregator: Aggregator!
+}
+
+type Price @entity {
+  id: ID!
+  rawPrice: BigInt!
+  price: BigDecimal!
+  timestamp: BigInt!
+  assetPair: AssetPair!
+  transmitter: String!
+  aggregator: Aggregator!
+}
+
+type Aggregator @entity {
+  id: ID!
+  answers: [Price!]! @derivedFrom(field: "aggregator")
+  currentPrices: [AssetPair!]! @derivedFrom(field: "aggregator")
+}

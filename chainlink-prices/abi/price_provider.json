@@ -1,0 +1,367 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "contract IPriceProvidersRepository",
+        "name": "_priceProvidersRepository",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_emergencyManager",
+        "type": "address"
+      },
+      {
+        "internalType": "contract AggregatorV3Interface",
+        "name": "_quoteAggregator",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_quoteAggregatorHeartbeat",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  { "inputs": [], "name": "AggregatorDidNotChange", "type": "error" },
+  { "inputs": [], "name": "AggregatorPriceNotAvailable", "type": "error" },
+  { "inputs": [], "name": "AssetNotSupported", "type": "error" },
+  { "inputs": [], "name": "EmergencyManagerDidNotChange", "type": "error" },
+  { "inputs": [], "name": "EmergencyThresholdNotReached", "type": "error" },
+  { "inputs": [], "name": "FallbackProviderAlreadySet", "type": "error" },
+  { "inputs": [], "name": "FallbackProviderDidNotChange", "type": "error" },
+  { "inputs": [], "name": "FallbackProviderNotSet", "type": "error" },
+  { "inputs": [], "name": "HeartbeatDidNotChange", "type": "error" },
+  { "inputs": [], "name": "InvalidAggregator", "type": "error" },
+  { "inputs": [], "name": "InvalidAggregatorDecimals", "type": "error" },
+  { "inputs": [], "name": "InvalidFallbackPriceProvider", "type": "error" },
+  { "inputs": [], "name": "InvalidHeartbeat", "type": "error" },
+  { "inputs": [], "name": "OnlyEmergencyManager", "type": "error" },
+  {
+    "inputs": [],
+    "name": "QuoteAggregatorHeartbeatDidNotChange",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "contract AggregatorV3Interface",
+        "name": "aggregator",
+        "type": "address"
+      }
+    ],
+    "name": "AggregatorDisabled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "contract AggregatorV3Interface",
+        "name": "aggregator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "convertToQuote",
+        "type": "bool"
+      }
+    ],
+    "name": "NewAggregator",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "emergencyManager",
+        "type": "address"
+      }
+    ],
+    "name": "NewEmergencyManager",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "contract IPriceProvider",
+        "name": "fallbackProvider",
+        "type": "address"
+      }
+    ],
+    "name": "NewFallbackPriceProvider",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "heartbeat",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewHeartbeat",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "heartbeat",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewQuoteAggregatorHeartbeat",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "EMERGENCY_PRECISION",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "EMERGENCY_THRESHOLD",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "assetData",
+    "outputs": [
+      { "internalType": "uint256", "name": "heartbeat", "type": "uint256" },
+      { "internalType": "bool", "name": "forceFallback", "type": "bool" },
+      { "internalType": "bool", "name": "convertToQuote", "type": "bool" },
+      {
+        "internalType": "contract AggregatorV3Interface",
+        "name": "aggregator",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IPriceProvider",
+        "name": "fallbackProvider",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" }
+    ],
+    "name": "assetSupported",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" }
+    ],
+    "name": "emergencyDisable",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "emergencyManager",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" }
+    ],
+    "name": "getAggregatorPrice",
+    "outputs": [
+      { "internalType": "bool", "name": "success", "type": "bool" },
+      { "internalType": "uint256", "name": "price", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" }
+    ],
+    "name": "getFallbackProvider",
+    "outputs": [
+      {
+        "internalType": "contract IPriceProvider",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" }
+    ],
+    "name": "getPrice",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "priceProviderPing",
+    "outputs": [{ "internalType": "bytes4", "name": "", "type": "bytes4" }],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "priceProvidersRepository",
+    "outputs": [
+      {
+        "internalType": "contract IPriceProvidersRepository",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "quoteAggregatorHeartbeat",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "quoteToken",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" },
+      {
+        "internalType": "contract AggregatorV3Interface",
+        "name": "_aggregator",
+        "type": "address"
+      },
+      { "internalType": "bool", "name": "_convertToQuote", "type": "bool" }
+    ],
+    "name": "setAggregator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_emergencyManager",
+        "type": "address"
+      }
+    ],
+    "name": "setEmergencyManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" },
+      {
+        "internalType": "contract IPriceProvider",
+        "name": "_fallbackProvider",
+        "type": "address"
+      }
+    ],
+    "name": "setFallbackPriceProvider",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" },
+      { "internalType": "uint256", "name": "_heartbeat", "type": "uint256" }
+    ],
+    "name": "setHeartbeat",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_heartbeat", "type": "uint256" }
+    ],
+    "name": "setQuoteAggregatorHeartbeat",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_asset", "type": "address" },
+      {
+        "internalType": "contract AggregatorV3Interface",
+        "name": "_aggregator",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IPriceProvider",
+        "name": "_fallbackProvider",
+        "type": "address"
+      },
+      { "internalType": "uint256", "name": "_heartbeat", "type": "uint256" },
+      { "internalType": "bool", "name": "_convertToQuote", "type": "bool" }
+    ],
+    "name": "setupAsset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

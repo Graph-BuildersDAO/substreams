@@ -13,7 +13,7 @@
 
 | Substream      | Status | Description |
 |----------------|:------:|-------------|
-
+| [`chainlink-prices`](chainlink-prices/)                 | 🔨 | Chainlink prices events
 
 
 ### Further resources
