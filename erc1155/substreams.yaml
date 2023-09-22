@@ -1,0 +1,55 @@
+specVersion: v0.1.0
+package:
+  name: "erc1155_substream"
+  version: v1.0.1
+
+imports:
+  entity: https://github.com/streamingfast/substreams-entity-change/releases/download/v0.2.1/substreams-entity-change-v0.2.1.spkg
+
+protobuf:
+  files:
+    - block_meta.proto
+    - schema.proto
+  importPaths:
+    - ./proto
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/substreams.wasm
+
+modules:
+  - name: map_transfers
+    kind: map
+    initialBlock: 12129118
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:schema.Transfers
+
+  - name: map_approvals
+    kind: map
+    initialBlock: 12129118
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:schema.Approvals
+
+  - name: map_uris
+    kind: map
+    initialBlock: 12129118
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:schema.Uris
+
+  - name: graph_out
+    kind: map
+    initialBlock: 12129118
+    inputs:
+      - source: sf.substreams.v1.Clock
+      - map: map_transfers
+      - map: map_approvals
+      - map: map_uris
+    output:
+      type: proto:substreams.entity.v1.EntityChanges

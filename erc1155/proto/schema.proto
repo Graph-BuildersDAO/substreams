@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package schema;
+
+message Contracts {
+  repeated Contract contracts = 1;
+}
+
+message Contract {
+    string address = 1;
+    string timestamp = 2;
+}
+
+message Transfers {
+  repeated Transfer transfers = 1;
+}
+
+message Transfer {
+  string id = 1; // {tx_hash}-{log_index}
+  string operator = 2;
+  string from = 3;
+  string to = 4;
+  repeated string token_ids = 5;
+}
+
+message Approval {
+  string id = 1; // {tx_hash}-{log_index}
+  string owner = 2;
+  string operator = 3;
+  bool approved = 4;
+}
+
+message Approvals {
+  repeated Approval approvals = 1;
+}
+
+message Uri {
+  string value = 1;
+  string token_id = 2;
+}
+
+message Uris {
+  repeated Uri uris = 1;
+}
