@@ -1,0 +1,41 @@
+type Block @entity {
+  id: String!
+  parentHash: String!
+  uncleHash: String!
+  nonce: BigInt!
+  receiptRoot: Bytes!
+  number: BigInt!
+  gasLimit: BigInt!
+  gasUsed: BigInt!
+  timestamp: BigInt!
+  size: BigInt!
+  difficulty: String!
+  totalDifficulty: String!
+}
+
+type Transaction @entity {
+  id: String!
+  status: String!
+  gasUsed: BigInt!
+  gasLimit: BigInt!
+  nonce: BigInt!
+  to: String!
+  from: String!
+  maxFeePerGas: BigInt!
+  maxPriorityFeePerGas: BigInt!
+  index: BigInt!
+  value: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  gasPrice: BigInt!
+}
+
+type Contract @entity {
+  id: String!
+  owner: String!
+  address: String!
+  transactionHash: String!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
