@@ -1,5 +1,5 @@
 [workspace]
-members = ["chainlink-prices", "erc1155", "erc721", "erc20"]
+members = ["chainlink-prices", "erc1155", "erc721", "erc20", "ethereum-network"]
 
 [workspace.dependencies]
 prost = "0.11"
