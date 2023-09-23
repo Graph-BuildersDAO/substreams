@@ -1,0 +1,31 @@
+type Collection @entity {
+  id: ID! #address of the contract
+  tokens: [Token!]! @derivedFrom(field: "collection") #tokens that belong to the contractA
+}
+
+type Transfer @entity {
+  id: ID! #tx hash of the transfer
+  from: Account! #account that sent the transfer
+  to: Account! #account that received the transfer
+  tokenId: Token! #token that was transferred
+}
+
+type Approval @entity {
+  id: ID! #tx hash of the approval
+  owner: Account!
+  approved: Account!
+  tokenId: Token!
+}
+
+type Token @entity {
+  id: ID! #token id
+  collection: Collection! #contract that the token belongs to
+  owner: Account! #account that owns the token
+  transfers: [Transfer!]! @derivedFrom(field: "tokenId") #transfers that the token has been involved in
+  approvals: [Approval!]! @derivedFrom(field: "tokenId")
+}
+
+type Account @entity {
+  id: ID! #Address of the account
+  tokens: [Token!]! @derivedFrom(field: "owner") #tokens that the account owns
+}
