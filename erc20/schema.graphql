@@ -1,0 +1,41 @@
+type Account @entity {
+  id: ID!
+  holdings: BigDecimal!
+  sent: [Transfer!]! @derivedFrom(field: "sender")
+  received: [Transfer!]! @derivedFrom(field: "receiver")
+  approvals: [Approval!]! @derivedFrom(field: "owner")
+}
+
+type Transfer @entity(immutable: true) {
+  id: ID!
+  sender: Account
+  receiver: Account!
+  amount: String!
+  token: Token!
+  timestamp: BigInt!
+  txHash: String!
+  blockNumber: BigInt!
+  logIndex: BigInt!
+}
+
+type Approval @entity(immutable: true) {
+  id: ID!
+  spender: String!
+  owner: Account!
+  amount: String!
+  timestamp: BigInt!
+  token: Token!
+  txHash: String!
+  blockNumber: BigInt!
+  logIndex: BigInt!
+}
+
+type Token @entity {
+  id: ID!
+  name: String!
+  address: String!
+  symbol: String!
+  decimals: String!
+  transfers: [Transfer!]! @derivedFrom(field: "token")
+  approvals: [Approval!]! @derivedFrom(field: "token")
+}

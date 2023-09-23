@@ -1,0 +1,63 @@
+specVersion: v0.1.0
+package:
+  name: 'apecoin'
+  version: v1.0.0
+
+imports:
+  entity: https://github.com/streamingfast/substreams-entity-change/releases/download/v0.2.1/substreams-entity-change-v0.2.1.spkg
+
+protobuf:
+  files:
+    - apecoin.proto
+  importPaths:
+    - ./proto
+
+binaries:
+  default:
+    type: wasm/rust-v1
+    file: ../target/wasm32-unknown-unknown/release/substreams.wasm
+
+modules:
+  - name: map_transfer
+    kind: map
+    initialBlock: 14204532
+    inputs:
+      - source: sf.ethereum.type.v2.Block
+    output:
+      type: proto:eth.apecoin.v1.Transfers
+
+  -  name: map_approval
+     kind: map
+     initialBlock: 14204532
+     inputs:
+       - source: sf.ethereum.type.v2.Block
+     output:
+      type: proto:eth.apecoin.v1.Approvals
+
+  - name: store_account_holdings
+    kind: store
+    initialBlock: 14204532
+    updatePolicy: add
+    valueType: bigdecimal
+    inputs:
+      - map: map_transfer
+
+  - name: store_token
+    kind: store
+    initialBlock: 14204532
+    updatePolicy: set
+    valueType: proto:eth.apecoin.v1.Token
+    inputs:
+      - source: sf.ethereum.type.v2.Block 
+    
+  - name: graph_out
+    kind: map
+    inputs:
+      - map: map_transfer
+      - map: map_approval
+      - store: store_account_holdings
+        mode: deltas
+      - store: store_token
+        mode: deltas
+    output:
+      type: proto:substreams.entity.v1.EntityChanges
