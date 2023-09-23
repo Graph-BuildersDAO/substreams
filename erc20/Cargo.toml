@@ -1,0 +1,30 @@
+[package]
+name = "apecoin"
+version = "1.0.0"
+description = "Apecoin Substreams"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ethabi = "18.0.0"
+hex-literal = "0.4.1"
+bigdecimal = "0.3.0"
+prost = { workspace = true }
+substreams-entity-change = { workspace = true }
+hex = "0.4.3"
+num-bigint = "0.4"
+pad = "0.1"
+thiserror = "1.0.37"
+prost-types = { workspace = true }
+substreams = { workspace = true }
+substreams-ethereum = { workspace = true }
+
+# Required so that ethabi > ethereum-types build correctly under wasm32-unknown-unknown
+[target.wasm32-unknown-unknown.dependencies]
+getrandom = { version = "0.2", features = ["custom"] }
+
+[build-dependencies]
+anyhow = "1"
+substreams-ethereum = "0.9.1"
