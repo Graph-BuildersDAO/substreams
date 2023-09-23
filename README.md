@@ -17,7 +17,7 @@
 | [`erc1155`](erc1155/)                 | 🔨 | Track a single ERC1155 contract
 | [`erc721`](erc721/)                 | 🔨 | Track a single ERC721 contract
 | [`erc20`](erc20/)                 | 🔨 | Track a single ERC20 contract
-| [`ethereum-network`](ethereum-network/)                 | 🔨 | Track a single ERC20 contract
+| [`ethereum-network`](ethereum-network/)                 | 🔨 | ETH network blocks, transactions & contracts
 
 
 ### Further resources
