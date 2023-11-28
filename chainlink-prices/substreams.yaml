@@ -21,14 +21,14 @@ binaries:
 modules:  
   - name: store_confirmed_feeds
     kind: store
-    initialBlock: 10607721
+    initialBlock: 104556
     updatePolicy: set_if_not_exists
     valueType: proto:chainlink.v1.Aggregator
     inputs:
       - source: sf.ethereum.type.v2.Block
   - name: get_chainlink_answers
     kind: map
-    initialBlock: 10607721
+    initialBlock: 104556
     inputs:
       - source: sf.ethereum.type.v2.Block
       - store: store_confirmed_feeds
@@ -36,14 +36,14 @@ modules:
       type: proto:chainlink.v1.Prices
   - name: chainlink_price_store
     kind: store
-    initialBlock: 10607721
+    initialBlock: 104556
     updatePolicy: set
     valueType: bigint
     inputs:
       - map: get_chainlink_answers
   - name: graph_out
     kind: map
-    initialBlock: 10607721
+    initialBlock: 104556
     inputs:
       - map: get_chainlink_answers
     output:

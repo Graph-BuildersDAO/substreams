@@ -67,65 +67,84 @@ fn get_chainlink_answers(
     block: eth::Block,
     confirmed_feeds: StoreGetProto<Aggregator>,
 ) -> Result<Prices, substreams::errors::Error> {
+    
     let mut prices: Prices = Prices { items: vec![] };
 
-    for trx in block.transactions() {
-        for (log, call_view) in trx.logs_with_calls() {
-            if let Some(event) = chainlink_aggregator::events::AnswerUpdated::match_and_decode(log)
-            {
-                let aggregator_lookup =
-                    confirmed_feeds.get_last(Hex(log.clone().address).to_string());
-                let found_aggregator = aggregator_lookup.is_some();
+    for logs in block.logs() {
 
-                let emitted_to = helper::transform_address(call_view.transaction.clone().to);
-                let emitted_from = helper::transform_address(call_view.transaction.clone().from);
+        substreams::log::println(&format!(
+            "To: {:?}",
+            Hex(logs.log.clone().address).to_string()
+        ));
 
-                substreams::log::println(&format!("{} {}", emitted_to, emitted_from));
+        substreams::log::println(&format!(
+            "TX: {}",
+            Hex(logs.receipt.transaction.clone().hash).to_string()
+        ));
 
-                if found_aggregator {
-                    substreams::log::println(
-                        aggregator_lookup
-                            .clone()
-                            .unwrap()
-                            .base_asset
-                            .unwrap()
-                            .address,
-                    );
-                } else {
-                    substreams::log::println("No aggregator found")
-                }
+        substreams::log::println(&format!(
+            "To: {}",
+            Hex(logs.receipt.transaction.clone().to).to_string()
+        ));
 
-                let description = chainlink_aggregator::functions::Description {}
-                    .call(log.clone().address.to_vec())
-                    .unwrap_or(String::new());
+        substreams::log::println(&format!(
+            "From: {}",
+            Hex(logs.receipt.transaction.clone().from).to_string()
+        ));
 
-                let decimals = chainlink_aggregator::functions::Decimals {}
-                    .call(log.clone().address.to_vec())
-                    .unwrap_or(BigInt::zero());
+        if let Some(event) = chainlink_aggregator::events::AnswerUpdated::match_and_decode(logs.log) {
+            let aggregator_lookup = confirmed_feeds.get_last(Hex(logs.log.clone().address).to_string());
+            let found_aggregator = aggregator_lookup.is_some();
 
-                if !description.is_empty() {
-                    let token_price = event.current.to_decimal(decimals.to_u64());
-                    // substreams::log::println(Hex(log.clone().address).to_string());
-                    let base_token = aggregator_lookup.clone().unwrap_or_default().base_asset;
-                    let quote_token = aggregator_lookup.clone().unwrap_or_default().quote_asset;
+            // let emitted_to = helper::transform_address(trx.clone().to);
+            // let emitted_from = helper::transform_address(trx.clone().from);
 
-                    prices.items.push(Price {
-                        asset_pair: Some(AssetPair {
-                            description: description.clone().replace(" ", "").to_string(),
-                            aggregator_address: Hex(log.clone().address).to_string(),
-                            oracle_address: Hex(trx.from.clone()).to_string(),
-                            base_token: base_token,
-                            quote_token: quote_token,
-                        }),
-                        price: token_price.to_string(),
-                        raw_price: event.current.to_string(),
-                        timestamp: block.timestamp_seconds() as i64,
-                        transmitter: Hex(trx.from.clone()).to_string(),
-                    });
-                }
+            // substreams::log::println(&format!("{} {}", emitted_to, emitted_from));
+
+            if found_aggregator {
+                substreams::log::println(
+                    aggregator_lookup
+                        .clone()
+                        .unwrap()
+                        .base_asset
+                        .unwrap()
+                        .address,
+                );
+            } else {
+                substreams::log::println("No aggregator found")
+            }
+
+            let description = chainlink_aggregator::functions::Description {}
+                .call(logs.log.clone().address.to_vec())
+                .unwrap_or(String::new());
+
+            let decimals = chainlink_aggregator::functions::Decimals {}
+                .call(logs.log.clone().address.to_vec())
+                .unwrap_or(BigInt::zero());
+
+            if !description.is_empty() {
+                let token_price = event.current.to_decimal(decimals.to_u64());
+                // substreams::log::println(Hex(log.clone().address).to_string());
+                let base_token = aggregator_lookup.clone().unwrap_or_default().base_asset;
+                let quote_token = aggregator_lookup.clone().unwrap_or_default().quote_asset;
+
+                prices.items.push(Price {
+                    asset_pair: Some(AssetPair {
+                        description: description.clone().replace(" ", "").to_string(),
+                        aggregator_address: Hex(logs.log.clone().address).to_string(),
+                        oracle_address: Hex(logs.receipt.transaction.from.clone()).to_string(),
+                        base_token: base_token,
+                        quote_token: quote_token,
+                    }),
+                    price: token_price.to_string(),
+                    raw_price: event.current.to_string(),
+                    timestamp: block.timestamp_seconds() as i64,
+                    transmitter: Hex(logs.receipt.transaction.from.clone()).to_string(),
+                });
             }
         }
     }
+    substreams::log::println("Block Finished");
     Ok(prices)
 }
 
@@ -254,49 +273,164 @@ fn graph_out(events: Prices) -> Result<EntityChanges, Error> {
             tables
                 .create_row(
                     "Asset",
-                    &format!("0x{}", &event.asset_pair.as_ref().unwrap().base_token.as_ref().unwrap().address),
+                    &format!(
+                        "0x{}",
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .base_token
+                            .as_ref()
+                            .unwrap()
+                            .address
+                    ),
                 )
                 .set(
                     "symbol",
-                    &format!("{}", &event.asset_pair.as_ref().unwrap().base_token.as_ref().unwrap().symbol),
+                    &format!(
+                        "{}",
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .base_token
+                            .as_ref()
+                            .unwrap()
+                            .symbol
+                    ),
                 )
                 .set(
                     "name",
-                    &format!("{}", &event.asset_pair.as_ref().unwrap().base_token.as_ref().unwrap().name),
+                    &format!(
+                        "{}",
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .base_token
+                            .as_ref()
+                            .unwrap()
+                            .name
+                    ),
                 )
                 .set(
                     "decimals",
-                    BigInt::try_from(&event.asset_pair.as_ref().unwrap().base_token.as_ref().unwrap().decimals.to_string()).unwrap()
+                    BigInt::try_from(
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .base_token
+                            .as_ref()
+                            .unwrap()
+                            .decimals
+                            .to_string(),
+                    )
+                    .unwrap(),
                 );
-                tables.update_row("AssetPair", &format!("{}", &event.asset_pair.as_ref().unwrap().description))
-                .set("asset", &format!("0x{}", &event.asset_pair.as_ref().unwrap().base_token.as_ref().unwrap().address))
-
+            tables
+                .update_row(
+                    "AssetPair",
+                    &format!("{}", &event.asset_pair.as_ref().unwrap().description),
+                )
+                .set(
+                    "asset",
+                    &format!(
+                        "0x{}",
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .base_token
+                            .as_ref()
+                            .unwrap()
+                            .address
+                    ),
+                )
         } else {
-            continue
+            continue;
         };
 
         if event.asset_pair.as_ref().unwrap().quote_token.is_some() {
             tables
                 .create_row(
                     "Asset",
-                    &format!("0x{}", &event.asset_pair.as_ref().unwrap().quote_token.as_ref().unwrap().address),
+                    &format!(
+                        "0x{}",
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .quote_token
+                            .as_ref()
+                            .unwrap()
+                            .address
+                    ),
                 )
                 .set(
                     "symbol",
-                    &format!("{}", &event.asset_pair.as_ref().unwrap().quote_token.as_ref().unwrap().symbol),
+                    &format!(
+                        "{}",
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .quote_token
+                            .as_ref()
+                            .unwrap()
+                            .symbol
+                    ),
                 )
                 .set(
                     "name",
-                    &format!("{}", &event.asset_pair.as_ref().unwrap().quote_token.as_ref().unwrap().name),
+                    &format!(
+                        "{}",
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .quote_token
+                            .as_ref()
+                            .unwrap()
+                            .name
+                    ),
                 )
                 .set(
                     "decimals",
-                    BigInt::try_from(&event.asset_pair.as_ref().unwrap().quote_token.as_ref().unwrap().decimals.to_string()).unwrap(),
+                    BigInt::try_from(
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .quote_token
+                            .as_ref()
+                            .unwrap()
+                            .decimals
+                            .to_string(),
+                    )
+                    .unwrap(),
                 );
-            tables.update_row("AssetPair", &format!("{}", &event.asset_pair.as_ref().unwrap().description))
-            .set("comparedAsset", &format!("0x{}", &event.asset_pair.as_ref().unwrap().quote_token.as_ref().unwrap().address))
+            tables
+                .update_row(
+                    "AssetPair",
+                    &format!("{}", &event.asset_pair.as_ref().unwrap().description),
+                )
+                .set(
+                    "comparedAsset",
+                    &format!(
+                        "0x{}",
+                        &event
+                            .asset_pair
+                            .as_ref()
+                            .unwrap()
+                            .quote_token
+                            .as_ref()
+                            .unwrap()
+                            .address
+                    ),
+                )
         } else {
-            continue
+            continue;
         };
     }
     Ok(tables.to_entity_changes())
