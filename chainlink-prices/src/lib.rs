@@ -72,34 +72,9 @@ fn get_chainlink_answers(
 
     for logs in block.logs() {
 
-        substreams::log::println(&format!(
-            "To: {:?}",
-            Hex(logs.log.clone().address).to_string()
-        ));
-
-        substreams::log::println(&format!(
-            "TX: {}",
-            Hex(logs.receipt.transaction.clone().hash).to_string()
-        ));
-
-        substreams::log::println(&format!(
-            "To: {}",
-            Hex(logs.receipt.transaction.clone().to).to_string()
-        ));
-
-        substreams::log::println(&format!(
-            "From: {}",
-            Hex(logs.receipt.transaction.clone().from).to_string()
-        ));
-
         if let Some(event) = chainlink_aggregator::events::AnswerUpdated::match_and_decode(logs.log) {
             let aggregator_lookup = confirmed_feeds.get_last(Hex(logs.log.clone().address).to_string());
             let found_aggregator = aggregator_lookup.is_some();
-
-            // let emitted_to = helper::transform_address(trx.clone().to);
-            // let emitted_from = helper::transform_address(trx.clone().from);
-
-            // substreams::log::println(&format!("{} {}", emitted_to, emitted_from));
 
             if found_aggregator {
                 substreams::log::println(
@@ -144,7 +119,6 @@ fn get_chainlink_answers(
             }
         }
     }
-    substreams::log::println("Block Finished");
     Ok(prices)
 }
 
