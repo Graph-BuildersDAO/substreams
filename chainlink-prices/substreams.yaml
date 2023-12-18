@@ -38,7 +38,7 @@ modules:
     kind: store
     initialBlock: 10607721
     updatePolicy: set
-    valueType: bigint
+    valueType: bigdecimal
     inputs:
       - map: get_chainlink_answers
   - name: graph_out
