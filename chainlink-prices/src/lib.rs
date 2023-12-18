@@ -8,7 +8,7 @@ use substreams::errors::Error;
 use substreams::scalar::{BigDecimal, BigInt};
 use substreams::store::StoreNew;
 use substreams::store::{StoreGet, StoreGetProto, StoreSetIfNotExistsProto};
-use substreams::store::{StoreSet, StoreSetBigInt, StoreSetIfNotExists};
+use substreams::store::{StoreSet, StoreSetBigDecimal, StoreSetIfNotExists};
 use substreams::Hex;
 use substreams_entity_change::pb::entity::EntityChanges;
 use substreams_entity_change::tables::Tables;
@@ -123,7 +123,7 @@ fn get_chainlink_answers(
 }
 
 #[substreams::handlers::store]
-fn chainlink_price_store(events: Prices, output: StoreSetBigInt) {
+fn chainlink_price_store(events: Prices, output: StoreSetBigDecimal) {
     for price in events.items {
         let asset_description = price.clone().asset_pair.unwrap();
 
@@ -156,7 +156,7 @@ fn chainlink_price_store(events: Prices, output: StoreSetBigInt) {
                             .unwrap()
                             .address
                     ),
-                    &BigInt::from_str(&price.raw_price).unwrap(),
+                    &BigDecimal::from_str(&price.price).unwrap(),
                 );
             }
         }
@@ -167,13 +167,13 @@ fn chainlink_price_store(events: Prices, output: StoreSetBigInt) {
                 "price_by_aggregator:{}",
                 price.clone().asset_pair.unwrap().aggregator_address
             ),
-            &BigInt::from_str(&price.raw_price).unwrap(),
+            &BigDecimal::from_str(&price.price).unwrap(),
         );
 
         output.set(
             0,
             format!("price_by_symbol:{}", split_description.join(":")),
-            &BigInt::from_str(&price.raw_price).unwrap(),
+            &BigDecimal::from_str(&price.price).unwrap(),
         );
     }
 }
